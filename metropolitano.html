@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comunidade Metropolitano — RP 29/11</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f4f6f9;
+    color: #2c3e50;
+    padding: 24px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+    color: #1a5276;
+  }
+  .subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+
+  /* Barra de ações do usuário (apenas Salvar) */
+  .acoes-usuario {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .1s, box-shadow .1s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.16); }
+  .btn-email { background: #1a5276; color: #fff; }
+  .btn-csv { background: #27ae60; color: #fff; }
+  .btn-limpar { background: #e74c3c; color: #fff; }
+  .btn-salvar { background: #e67e22; color: #fff; padding: 14px 32px; font-size: 1rem; }
+
+  /* Área administrativa (oculta por padrão) */
+  .acoes-admin {
+    display: none;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+    padding: 16px;
+    background: #fff8e1;
+    border: 2px dashed #f39c12;
+    border-radius: 12px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .acoes-admin.visivel { display: flex; }
+  .acoes-admin .titulo-admin {
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #b9770e;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+
+  .cards {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 22px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    text-align: center;
+    min-width: 150px;
+  }
+  .card .num {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #1a5276;
+  }
+  .card .label {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .familias {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    max-width: 1250px;
+    margin: 0 auto;
+  }
+  .familia {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.10);
+    border-left: 6px solid #1a5276;
+    overflow: hidden;
+  }
+  .familia-header {
+    background: #eaf2f8;
+    padding: 12px 18px;
+    font-weight: bold;
+    color: #1a5276;
+    font-size: 1rem;
+    border-bottom: 1px solid #d6e4ee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .familia-header .qtd {
+    font-size: 0.78rem;
+    font-weight: normal;
+    background: #1a5276;
+    color: #fff;
+    border-radius: 12px;
+    padding: 3px 10px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead th {
+    background: #f7f9fb;
+    color: #5d6d7e;
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e8ecef;
+  }
+  tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #f0f3f5;
+    font-size: 0.9rem;
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .div-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.76rem;
+    font-weight: bold;
+    color: #fff;
+  }
+  .div-DF { background: #2980b9; }
+  .div-DS { background: #27ae60; }
+  .div-JS { background: #e67e22; }
+  .titular-sim { color: #27ae60; font-weight: bold; }
+  .titular-nao { color: #95a5a6; }
+
+  .membro-select,
+  .membro-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #cfd8dc;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    background: #fff;
+    color: #2c3e50;
+  }
+  .membro-select:focus,
+  .membro-input:focus {
+    outline: 2px solid #aed6f1;
+    border-color: #2980b9;
+  }
+  .membro-input { min-width: 220px; }
+  .membro-input::placeholder { font-size: 0.78rem; color: #aab7c4; }
+
+  .status-pendente { border-left: 3px solid #e67e22; }
+  .status-confirmado { border-left: 3px solid #27ae60; background: #f4fdf8; }
+  .status-nao { border-left: 3px solid #e74c3c; background: #fdf5f5; }
+  .status-talvez { border-left: 3px solid #f1c40f; background: #fffdf3; }
+
+  .footer {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 0.8rem;
+    color: #95a5a6;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1a5276;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: all .3s;
+    z-index: 999;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<h1>Comunidade Metropolitano</h1>
+<p class="subtitle">RP 29/11 · Confirmação individual por membro · carro de quem (até 5 ocupantes)</p>
+
+<!-- Botão visível ao usuário -->
+<div class="acoes-usuario">
+  <button class="btn btn-salvar" onclick="salvarLocal(true); reenviarPendentes(false)">💾 Salvar respostas</button>
+</div>
+
+<!-- Área administrativa (oculta) -->
+<div class="acoes-admin" id="acoesAdmin">
+  <div class="titulo-admin">🔒 Área administrativa</div>
+  <button class="btn btn-email" onclick="enviarEmail()">📧 Enviar resultado por e-mail</button>
+  <button class="btn btn-csv" onclick="exportarCSV()">📥 Baixar CSV</button>
+  <button class="btn btn-limpar" onclick="limparTudo()">🗑️ Limpar tudo</button>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="num" id="total-familias">0</div><div class="label">Famílias</div></div>
+  <div class="card"><div class="num" id="total-membros">0</div><div class="label">Membros</div></div>
+  <div class="card"><div class="num" id="total-confirmados">0</div><div class="label">Confirmados</div></div>
+  <div class="card"><div class="num" id="total-pendentes">0</div><div class="label">Pendentes</div></div>
+</div>
+
+<div class="familias" id="familias-container"></div>
+
+<p class="footer">Comunidade Metropolitano · Respostas salvas automaticamente e enviadas à coordenação</p>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+  /* ============================================
+     CONFIGURAÇÃO (as 2 únicas linhas que você precisa conferir)
+     1) URL_WEB_APP  → cole aqui o URL do Apps Script (termina com /exec)
+     2) COMUNIDADE   → deve ser IGUAL ao nome da aba da planilha
+     ============================================ */
+  const URL_WEB_APP = "https://script.google.com/macros/s/AKfycbxuSuBEghQd5_rO-3sbGuH-DEBlb8VNCqTD9EDkF7Vd91eeb4E_H2i_Hx0G44viMtegTg/exec";
+  const COMUNIDADE  = "Metropolitano";
+  const dados = [
+    { nome: "Magali Piscola", titular: "Sim", divisao: "DF", codigo: "5863" },
+    { nome: "Iraci Conceição dos Santos Baba", titular: "Sim", divisao: "DF", codigo: "6542" },
+    { nome: "Ricardo Hidemi Baba", titular: "Não", divisao: "DS", codigo: "6542" },
+    { nome: "Simone Mayumi Baba", titular: "Não", divisao: "JS", codigo: "6542" },
+    { nome: "Mamoru Saito", titular: "Sim", divisao: "DS", codigo: "6543" },
+    { nome: "Yukimi Umeki Saito", titular: "Não", divisao: "DF", codigo: "6543" },
+    { nome: "Geni Conceicão de Souza", titular: "Sim", divisao: "DF", codigo: "6548" },
+    { nome: "Edson Santos da Silva", titular: "Não", divisao: "DS", codigo: "6549" },
+    { nome: "Jaqueline Carregalo Bifulco Dias", titular: "Sim", divisao: "DF", codigo: "7745" },
+    { nome: "Cristina Cavalcanti Freitas", titular: "Sim", divisao: "DF", codigo: "21645" },
+    { nome: "Nubia Maria da Silva", titular: "Sim", divisao: "DF", codigo: "24891" },
+    { nome: "Renata da Silva Teixeira", titular: "Não", divisao: "JS", codigo: "24891" },
+    { nome: "Sônia Regina de Souza", titular: "Sim", divisao: "DF", codigo: "50971" },
+    { nome: "Andréa Marciano Pereira", titular: "Sim", divisao: "DF", codigo: "70010" },
+    { nome: "Gean Pereira Lazaro", titular: "Não", divisao: "JS", codigo: "70010" },
+    { nome: "Yuri Felipe Angelis Marciano", titular: "Não", divisao: "JS", codigo: "70010" },
+    { nome: "Sakae Hayashi", titular: "Sim", divisao: "DF", codigo: "88710" },
+    { nome: "Edgenalva Elias Medeiros", titular: "Sim", divisao: "DF", codigo: "95256" },
+    { nome: "Beatriz Silva Honorato", titular: "Não", divisao: "JS", codigo: "97721" },
+    { nome: "Larissa Vitória Silva Honorato", titular: "Não", divisao: "JS", codigo: "97721" },
+    { nome: "Márcia dos Santos da Silva Honorato", titular: "Sim", divisao: "DF", codigo: "97721" },
+    { nome: "Barbara Nishimoto", titular: "Sim", divisao: "JS", codigo: "502735" },
+    { nome: "Amilton Jesus de Almeida", titular: "Sim", divisao: "DS", codigo: "504200" },
+    { nome: "Jilmara da Silva Oliveira", titular: "Sim", divisao: "DF", codigo: "519705" },
+    { nome: "Pietro Luiz de Oliveira", titular: "Não", divisao: "JS", codigo: "519705" },
+    { nome: "Itamar Vasconcelos", titular: "Sim", divisao: "DS", codigo: "529053" },
+    { nome: "Anderson Leite da Silva", titular: "Sim", divisao: "DS", codigo: "531801" },
+    { nome: "Alice Gil Divino de Souza", titular: "Não", divisao: "JS", codigo: "533559" },
+    { nome: "Arthur Gil Divino Sorge", titular: "Não", divisao: "JS", codigo: "533559" },
+    { nome: "Drieli del Divino Santos", titular: "Sim", divisao: "DF", codigo: "533559" },
+    { nome: "Fabio de Almeida Nascimento", titular: "Sim", divisao: "JS", codigo: "545373" },
+    { nome: "Marcos Vinicius Teixeira Pereira", titular: "Sim", divisao: "JS", codigo: "548971" },
+    { nome: "Diego Farias da Silva", titular: "Sim", divisao: "JS", codigo: "550164" },
+    { nome: "Cristiane de Souza Laurindo", titular: "Sim", divisao: "DF", codigo: "550513" },
+    { nome: "Vera Aparecida Costa", titular: "Sim", divisao: "DF", codigo: "571007" },
+    { nome: "Iago Gonçalves de Jesus Chagas", titular: "Sim", divisao: "JS", codigo: "575627" },
+    { nome: "Davi Victor Pereira Hais", titular: "Não", divisao: "JS", codigo: "576136" },
+    { nome: "Denner Pereira Lazaro", titular: "Sim", divisao: "JS", codigo: "576136" },
+    { nome: "Tamiris Menezes Hais", titular: "Não", divisao: "DF", codigo: "576136" },
+    { nome: "Francielle Pereira Brandão", titular: "Sim", divisao: "DF", codigo: "578964" },
+    { nome: "Isabelly Pereira Alves Nogueira", titular: "Não", divisao: "JS", codigo: "578964" },
+    { nome: "João Victor Marcelino de Souza", titular: "Não", divisao: "JS", codigo: "578964" },
+    { nome: "Tatiane Nascimento de Souza", titular: "Não", divisao: "DF", codigo: "578964" },
+    { nome: "Luana Gabriele da Silva", titular: "Sim", divisao: "JS", codigo: "578996" },
+    { nome: "Thomaz Hudson Calavans de Lima", titular: "Sim", divisao: "JS", codigo: "579708" },
+    { nome: "Fernanda Barbosa dos Santos", titular: "Sim", divisao: "JS", codigo: "583553" },
+    { nome: "Ederson Bastos Silva", titular: "Sim", divisao: "DS", codigo: "586393" },
+    { nome: "Edgar da Silva Oliveira", titular: "Sim", divisao: "DS", codigo: "590868" },
+    { nome: "Edvaldo Ferreira Lima", titular: "Sim", divisao: "DS", codigo: "600836" },
+    { nome: "Aline Barros", titular: "Sim", divisao: "DF", codigo: "605363" },
+    { nome: "Marcos Barros Dias", titular: "Não", divisao: "JS", codigo: "605363" },
+    { nome: "Sebastian Barros Dias", titular: "Não", divisao: "JS", codigo: "605363" },
+    { nome: "Daiane Fernandes Gradilone", titular: "Sim", divisao: "DF", codigo: "612358" }
+  ];
+
+  const STORAGE_KEY = 'comunidade_metropolitano_rp_29_11';
+  const EMAIL_DESTINO = 'aleites1@gmail.com';
+
+  const familias = {};
+  dados.forEach(p => {
+    if (!familias[p.codigo]) familias[p.codigo] = [];
+    familias[p.codigo].push(p);
+  });
+
+  const codigos = Object.keys(familias).sort((a, b) => Number(a) - Number(b));
+  const container = document.getElementById('familias-container');
+
+  function carregarLocal() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+  let respostas = carregarLocal();
+
+  function chaveMembro(cod, idxMembro) {
+    return `${cod}__${idxMembro}`;
+  }
+
+  let totalMembros = 0;
+
+  codigos.forEach((cod, idxFam) => {
+    const membros = familias[cod];
+    totalMembros += membros.length;
+    const titular = membros.find(m => m.titular === "Sim") || membros[0];
+
+    const bloco = document.createElement('div');
+    bloco.className = 'familia';
+
+    const header = document.createElement('div');
+    header.className = 'familia-header';
+    header.innerHTML = `
+      <span>👨‍👩‍👧‍👦 Família ${idxFam + 1} — ${titular.nome}</span>
+      <span class="qtd">${membros.length} membro${membros.length > 1 ? 's' : ''}</span>
+    `;
+    bloco.appendChild(header);
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Divisão</th>
+          <th>Titular</th>
+          <th>Confirmação RP 29/11</th>
+          <th>Carro de quem? (até 5 ocupantes)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbody = table.querySelector('tbody');
+
+    membros.forEach((m, idxM) => {
+      const chave = chaveMembro(cod, idxM);
+      const r = respostas[chave] || { confirmacao: '', comoVai: '' };
+
+      const tr = document.createElement('tr');
+      tr.dataset.chave = chave;
+
+      const tdNome = document.createElement('td');
+      tdNome.textContent = m.nome;
+      tr.appendChild(tdNome);
+
+      const tdDiv = document.createElement('td');
+      tdDiv.innerHTML = `<span class="div-badge div-${m.divisao}">${m.divisao}</span>`;
+      tr.appendChild(tdDiv);
+
+      const tdTit = document.createElement('td');
+      tdTit.textContent = m.titular;
+      tdTit.className = m.titular === 'Sim' ? 'titular-sim' : 'titular-nao';
+      tr.appendChild(tdTit);
+
+      const tdConf = document.createElement('td');
+      tdConf.innerHTML = `
+        <select class="membro-select" data-chave="${chave}" data-campo="confirmacao">
+          <option value="">— Selecione —</option>
+          <option value="Confirmado" ${r.confirmacao === 'Confirmado' ? 'selected' : ''}>Confirmado</option>
+          <option value="Não confirmado" ${r.confirmacao === 'Não confirmado' ? 'selected' : ''}>Não confirmado</option>
+          <option value="Talvez" ${r.confirmacao === 'Talvez' ? 'selected' : ''}>Talvez</option>
+        </select>
+      `;
+      tr.appendChild(tdConf);
+
+      const tdComo = document.createElement('td');
+      tdComo.innerHTML = `
+        <input type="text" class="membro-input" data-chave="${chave}" data-campo="comoVai"
+               placeholder="Carro de quem? Ex.: Carro da Maria — ocupantes: Maria, João, Ana, Pedro, Lucas"
+               value="${r.comoVai || ''}">
+      `;
+      tr.appendChild(tdComo);
+
+      aplicarStatusLinha(tr, r.confirmacao);
+      tbody.appendChild(tr);
+    });
+
+    bloco.appendChild(table);
+    container.appendChild(bloco);
+  });
+
+  container.addEventListener('change', e => {
+    if (e.target.matches('[data-chave]')) {
+      const chave = e.target.dataset.chave;
+      const campo = e.target.dataset.campo;
+      if (!respostas[chave]) respostas[chave] = { confirmacao: '', comoVai: '' };
+      respostas[chave][campo] = e.target.value;
+      salvarLocal(true);
+      const tr = e.target.closest('tr');
+      aplicarStatusLinha(tr, respostas[chave].confirmacao);
+      atualizarCards();
+      enviarChave(chave);   // envia esta linha para a planilha
+    }
+  });
+
+  container.addEventListener('input', e => {
+    if (e.target.matches('[data-chave]') && e.target.dataset.campo === 'comoVai') {
+      const chave = e.target.dataset.chave;
+      if (!respostas[chave]) respostas[chave] = { confirmacao: '', comoVai: '' };
+      respostas[chave].comoVai = e.target.value;
+      salvarLocal(true);
+    }
+  });
+
+  function aplicarStatusLinha(tr, status) {
+    tr.classList.remove('status-pendente', 'status-confirmado', 'status-nao', 'status-talvez');
+    if (status === 'Confirmado') tr.classList.add('status-confirmado');
+    else if (status === 'Não confirmado') tr.classList.add('status-nao');
+    else if (status === 'Talvez') tr.classList.add('status-talvez');
+    else tr.classList.add('status-pendente');
+  }
+
+  function salvarLocal(silencioso) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(respostas));
+    if (!silencioso) mostrarToast('💾 Respostas salvas no navegador!');
+    atualizarCards();
+  }
+
+  function atualizarCards() {
+    let confirmados = 0, semResposta = 0;
+    codigos.forEach(cod => {
+      familias[cod].forEach((m, idxM) => {
+        const r = respostas[chaveMembro(cod, idxM)] || {};
+        if (r.confirmacao === 'Confirmado') confirmados++;
+        if (!r.confirmacao) semResposta++;
+      });
+    });
+    document.getElementById('total-familias').textContent = codigos.length;
+    document.getElementById('total-membros').textContent = totalMembros;
+    document.getElementById('total-confirmados').textContent = confirmados;
+    document.getElementById('total-pendentes').textContent = semResposta;
+  }
+
+  function montarTextoResultado() {
+    let linhas = [];
+    linhas.push('COMUNIDADE METROPOLITANO — RP 29/11');
+    linhas.push('Resultado de confirmação por membro');
+    linhas.push('Gerado em: ' + new Date().toLocaleString('pt-BR'));
+    linhas.push('');
+
+    codigos.forEach((cod, idxFam) => {
+      const membros = familias[cod];
+      const titular = membros.find(m => m.titular === "Sim") || membros[0];
+      linhas.push(`FAMÍLIA ${idxFam + 1} — ${titular.nome}`);
+      membros.forEach((m, idxM) => {
+        const chave = chaveMembro(cod, idxM);
+        const r = respostas[chave] || { confirmacao: '', comoVai: '' };
+        const conf = r.confirmacao || 'SEM RESPOSTA';
+        const como = r.comoVai ? ` | Carro/ocupantes: ${r.comoVai}` : '';
+        linhas.push(`  • ${m.nome} (${m.divisao}${m.titular === 'Sim' ? ', titular' : ''}) — ${conf}${como}`);
+      });
+      linhas.push('');
+    });
+
+    let confirmados = 0, naoConf = 0, talvez = 0, semResp = 0;
+    codigos.forEach(cod => {
+      familias[cod].forEach((m, idxM) => {
+        const r = respostas[chaveMembro(cod, idxM)] || {};
+        if (r.confirmacao === 'Confirmado') confirmados++;
+        else if (r.confirmacao === 'Não confirmado') naoConf++;
+        else if (r.confirmacao === 'Talvez') talvez++;
+        else semResp++;
+      });
+    });
+
+    linhas.push('RESUMO');
+    linhas.push(`Total de membros: ${totalMembros}`);
+    linhas.push(`Confirmados: ${confirmados}`);
+    linhas.push(`Não confirmados: ${naoConf}`);
+    linhas.push(`Talvez: ${talvez}`);
+    linhas.push(`Sem resposta: ${semResp}`);
+
+    return linhas.join('\n');
+  }
+
+  function enviarEmail() {
+    const texto = montarTextoResultado();
+    const assunto = encodeURIComponent('Comunidade Metropolitano — Confirmações RP 29/11');
+    const corpo = encodeURIComponent(texto);
+    window.location.href = `mailto:${EMAIL_DESTINO}?subject=${assunto}&body=${corpo}`;
+    mostrarToast('📧 Abrindo seu aplicativo de e-mail...');
+  }
+
+  function exportarCSV() {
+    const linhas = [];
+    linhas.push(['Família', 'Nome', 'Divisão', 'Titular', 'Confirmação RP 29/11', 'Carro de quem? (até 5 ocupantes)'].join(';'));
+
+    codigos.forEach((cod, idxFam) => {
+      const membros = familias[cod];
+      membros.forEach((m, idxM) => {
+        const r = respostas[chaveMembro(cod, idxM)] || {};
+        linhas.push([
+          `Família ${idxFam + 1}`,
+          m.nome,
+          m.divisao,
+          m.titular,
+          r.confirmacao || 'Sem resposta',
+          (r.comoVai || '').replace(/;/g, ',')
+        ].join(';'));
+      });
+    });
+
+    const blob = new Blob(['\uFEFF' + linhas.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'confirmacoes_metropolitano_rp_29_11.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    mostrarToast('📥 CSV baixado!');
+  }
+
+  function limparTudo() {
+    if (confirm('Tem certeza que deseja limpar todas as respostas?')) {
+      respostas = {};
+      localStorage.removeItem(STORAGE_KEY);
+      document.querySelectorAll('[data-chave]').forEach(el => {
+        if (el.tagName === 'SELECT') el.value = '';
+        else el.value = '';
+        const tr = el.closest('tr');
+        if (tr) aplicarStatusLinha(tr, '');
+      });
+      atualizarCards();
+      mostrarToast('🗑️ Respostas limpas!');
+    }
+  }
+
+
+  /* ============================================
+     ENVIO PARA A PLANILHA GOOGLE
+     ============================================ */
+  const PENDENTES_KEY = STORAGE_KEY + '_pendentes';
+  function carregarPendentes() {
+    try { return JSON.parse(localStorage.getItem(PENDENTES_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function salvarPendentes(lista) {
+    try { localStorage.setItem(PENDENTES_KEY, JSON.stringify(lista)); } catch (e) {}
+  }
+  function marcarPendente(chave, pendente) {
+    let lista = carregarPendentes().filter(c => c !== chave);
+    if (pendente) lista.push(chave);
+    salvarPendentes(lista);
+  }
+
+  // Monta os dados de UM membro a partir da chave da linha
+  function montarDadosMembro(chave) {
+    const [cod, idx] = chave.split('__');
+    const membros = familias[cod];
+    const m = membros[Number(idx)];
+    const titular = membros.find(x => x.titular === 'Sim') || membros[0];
+    const idxFam = codigos.indexOf(cod);
+    const r = respostas[chave] || {};
+    return {
+      comunidade: COMUNIDADE,
+      familia: `Família ${idxFam + 1} — ${titular.nome}`,
+      nome: m.nome,
+      divisao: m.divisao,
+      titular: m.titular,
+      confirmacao: r.confirmacao || '',
+      carro: r.comoVai || ''
+    };
+  }
+
+  // Envia um membro para a planilha. Devolve true/false.
+  async function enviarParaPlanilha(dadosMembro) {
+    if (!URL_WEB_APP || URL_WEB_APP.indexOf('COLE_AQUI') !== -1) {
+      console.warn('URL_WEB_APP ainda não foi configurado.');
+      return false;
+    }
+    try {
+      const resp = await fetch(URL_WEB_APP, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita problema de CORS
+        body: JSON.stringify(dadosMembro)
+      });
+      const resultado = await resp.json();
+      return resultado.status === 'ok';
+    } catch (erro) {
+      console.error('Erro ao enviar para a planilha:', erro);
+      return false;
+    }
+  }
+
+  // Envia a linha alterada e avisa o usuário
+  async function enviarChave(chave, silencioso) {
+    const ok = await enviarParaPlanilha(montarDadosMembro(chave));
+    marcarPendente(chave, !ok);
+    if (!silencioso) {
+      mostrarToast(ok
+        ? '✅ Resposta enviada!'
+        : '⚠️ Salvo neste aparelho, mas não enviado. Toque em "Salvar respostas" para tentar de novo.');
+    }
+    return ok;
+  }
+
+  // Reenvia o que ficou pendente (sem internet, por exemplo)
+  async function reenviarPendentes(silencioso) {
+    const lista = carregarPendentes().filter(c => {
+      const [cod, idx] = c.split('__');
+      return familias[cod] && familias[cod][Number(idx)];
+    });
+    if (!lista.length) {
+      if (!silencioso) mostrarToast('💾 Respostas salvas! Nada pendente de envio.');
+      return;
+    }
+    let enviados = 0;
+    for (const chave of lista) {
+      if (await enviarChave(chave, true)) enviados++;
+    }
+    if (!silencioso) {
+      mostrarToast(enviados === lista.length
+        ? `✅ ${enviados} resposta(s) reenviada(s)!`
+        : '⚠️ Ainda sem conexão. Tente novamente mais tarde.');
+    }
+  }
+
+  let toastTimer;
+  function mostrarToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  /* ============================================
+     ACESSO À ÁREA ADMINISTRATIVA
+     - Clique 3 vezes no título "Comunidade Metropolitano"
+     - OU pressione Ctrl + Shift + A
+     ============================================ */
+  const titulo = document.querySelector('h1');
+  let cliques = 0, timerCliques;
+  titulo.style.cursor = 'default';
+  titulo.addEventListener('click', () => {
+    cliques++;
+    clearTimeout(timerCliques);
+    timerCliques = setTimeout(() => { cliques = 0; }, 800);
+    if (cliques === 3) {
+      document.getElementById('acoesAdmin').classList.toggle('visivel');
+      cliques = 0;
+      mostrarToast(document.getElementById('acoesAdmin').classList.contains('visivel')
+        ? '🔓 Área administrativa aberta'
+        : '🔒 Área administrativa fechada');
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+      e.preventDefault();
+      document.getElementById('acoesAdmin').classList.toggle('visivel');
+      mostrarToast(document.getElementById('acoesAdmin').classList.contains('visivel')
+        ? '🔓 Área administrativa aberta'
+        : '🔒 Área administrativa fechada');
+    }
+  });
+
+  atualizarCards();
+  reenviarPendentes(true);
+</script>
+
+</body>
+</html>
